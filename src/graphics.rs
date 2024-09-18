@@ -1,12 +1,14 @@
 #![allow(dead_code)]
 
 
+use std::{default, sync::Arc};
+
 use bytemuck;
 use winit::{window::Window, event::{WindowEvent, ElementState, MouseButton}};
 use wgpu::{self, TextureViewDescriptor, TextureAspect, RenderPipeline, ColorTargetState, MultisampleState, util::{DeviceExt, BufferInitDescriptor}};
 
-pub struct State {
-    surface: wgpu::Surface,
+pub struct State<'a> {
+    surface: wgpu::Surface<'a>,
     device: wgpu::Device,
     queue: wgpu::Queue,
     config: wgpu::SurfaceConfiguration,
@@ -17,21 +19,21 @@ pub struct State {
     // The window must be declared after the surface so
     // it gets dropped after it as the surface contains
     // unsafe references to the window's resources.
-    window: Window,
+    window: Arc<Window>,
     index_buffer: wgpu::Buffer,
     num_indices: u32,
 }
 
-impl State {
+impl<'a> State<'a> {
     // Creating some of the wgpu types requires async code
     pub async fn new(window: Window) -> Self {
         let size = window.inner_size();
-
+        let window = Arc::new(window);
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
             backends: wgpu::Backends::all(), ..Default::default()
         });
 
-        let surface = unsafe { instance.create_surface(&window)}.unwrap();
+        let surface = instance.create_surface(window.clone()).unwrap();
 
         let adapter = instance.request_adapter(
             &wgpu::RequestAdapterOptions{ 
@@ -44,9 +46,10 @@ impl State {
         //println!("{:?}", adapter.features());
         let (device, queue) = adapter.request_device(
             &wgpu::DeviceDescriptor{
-                features: wgpu::Features::empty(),
-                limits: wgpu::Limits::default(),
+                required_features: wgpu::Features::empty(),
+                required_limits: wgpu::Limits::default(),
                 label: None,
+                memory_hints: wgpu::MemoryHints::Performance,
             }, 
             None,
         ).await.unwrap();
@@ -66,6 +69,7 @@ impl State {
             present_mode: wgpu::PresentMode::AutoVsync, // Maybe switch to PresentMode::Fifo for Vsync
             alpha_mode: surface_caps.alpha_modes[0],
             view_formats: vec![],
+            desired_maximum_frame_latency: 2,
         };
         surface.configure(&device, &config);
 
@@ -91,7 +95,8 @@ impl State {
                 entry_point: "vs_main", 
                 buffers: &[
                     Vertex::desc(),
-                ], 
+                ],
+                compilation_options: Default::default(), 
             },
             fragment: Some(wgpu::FragmentState { 
                 module: &shader, 
@@ -101,6 +106,7 @@ impl State {
                     blend: Some(wgpu::BlendState::REPLACE),
                     write_mask: wgpu::ColorWrites::ALL,
                 })],
+                compilation_options: Default::default(),
             }),
             primitive: wgpu::PrimitiveState {
                 topology: wgpu::PrimitiveTopology::TriangleList,
@@ -118,6 +124,7 @@ impl State {
                 alpha_to_coverage_enabled: false,
             },
             multiview: None,
+            cache: None,
         });
 
         let vertex_buffer = device.create_buffer_init(&BufferInitDescriptor {
