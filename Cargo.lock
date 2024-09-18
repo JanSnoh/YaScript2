@@ -3,6 +3,16 @@
 version = 3
 
 [[package]]
+name = "YaScript2"
+version = "0.1.0"
+dependencies = [
+ "bytemuck",
+ "pollster",
+ "wgpu",
+ "winit",
+]
+
+[[package]]
 name = "ab_glyph"
 version = "0.2.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1195,16 +1205,6 @@ dependencies = [
  "memmap2",
  "smithay-client-toolkit",
  "tiny-skia",
-]
-
-[[package]]
-name = "second_project"
-version = "0.1.0"
-dependencies = [
- "bytemuck",
- "pollster",
- "wgpu",
- "winit",
 ]
 
 [[package]]

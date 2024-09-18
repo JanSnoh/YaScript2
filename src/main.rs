@@ -1,3 +1,5 @@
+use std::{cmp::Ordering, time::Instant};
+
 use pollster::FutureExt as _;
 use winit::{
     event::{Event, WindowEvent, KeyEvent, ElementState},
@@ -22,6 +24,7 @@ fn main(){
 }
 
 async fn run() {
+    let mut timer = Instant::now();
     let event_loop = EventLoop::new().unwrap();
     
     let window = WindowBuilder::new().build(&event_loop).unwrap();
@@ -31,10 +34,7 @@ async fn run() {
     //.with_inner_size(glutin::dpi::LogicalSize::new(1024.0, 768.0));
     //let windowed_contest = glutin::ContextBuilder::new().build_windowed(win_buil, &evnt_lp).unwrap();
     
-
-    //windowed_contest.window().;
-    println!("Hello, world!");
-    
+        
     let mut state = State::new(window).await;
 
     event_loop.run(move |event, cockandball|{
@@ -54,21 +54,31 @@ async fn run() {
                         state.window().request_redraw();
                     },
                     //WindowEvent::MouseInput { device_id, state, button } => state.window().set_window_level(window::WindowLevel::AlwaysOnTop),
-                    WindowEvent::RedrawRequested => match state.render() {
-                        Ok(_) => {},
-                        Err(wgpu::SurfaceError::Lost) => state.resize(state.size),
-                        Err(wgpu::SurfaceError::OutOfMemory) => cockandball.exit(),
-                        Err(e) => eprintln!("{:?}", e),
+                    WindowEvent::RedrawRequested => {
+                        let fps = 1.0/timer.elapsed().as_secs_f32();
+                        dbg!(fps);
+                        timer = Instant::now();
+                        match state.render() {
+                            Ok(_) => {},
+                            Err(wgpu::SurfaceError::Lost) => state.resize(state.size),
+                            Err(wgpu::SurfaceError::OutOfMemory) => cockandball.exit(),
+                            Err(e) => eprintln!("{:?}", e),
+                        }
+
                     },
                     
                     _ => ()
                 }
             },
             Event::UserEvent(_) => todo!(),
-            Event::AboutToWait => (),
+            Event::AboutToWait => state.window().request_redraw(),
             _ => ()
         }
        
     }).unwrap();
 }
 
+#[test]
+fn comp_shader(){
+    
+}

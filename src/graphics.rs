@@ -35,7 +35,7 @@ impl State {
 
         let adapter = instance.request_adapter(
             &wgpu::RequestAdapterOptions{ 
-                power_preference: wgpu::PowerPreference::default(),
+                power_preference: wgpu::PowerPreference::HighPerformance,
                 compatible_surface: Some(&surface), 
                 force_fallback_adapter: false,
             }
@@ -63,7 +63,7 @@ impl State {
             format: surface_format,
             width: size.width,
             height: size.height,
-            present_mode: surface_caps.present_modes[0], // Maybe switch to PresentMode::Fifo for Vsync
+            present_mode: wgpu::PresentMode::AutoVsync, // Maybe switch to PresentMode::Fifo for Vsync
             alpha_mode: surface_caps.alpha_modes[0],
             view_formats: vec![],
         };
@@ -82,7 +82,7 @@ impl State {
                 push_constant_ranges: &[],
             }
         );
-        
+
         let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor{
             label: Some("Render Pipeline"),
             layout: Some(&pipeline_layout),
@@ -122,19 +122,19 @@ impl State {
 
         let vertex_buffer = device.create_buffer_init(&BufferInitDescriptor {
             label: Some("Vertex Buffer"),
-            contents: bytemuck::cast_slice(VERTICES),
+            contents: bytemuck::cast_slice(VERTICES_2),
             usage: wgpu::BufferUsages::VERTEX,
         });
 
         let index_buffer = device.create_buffer_init(
             &BufferInitDescriptor{
                 label: Some("Index buffer"),
-                contents: bytemuck::cast_slice(INDICES),
+                contents: bytemuck::cast_slice(INDICES_2),
                 usage: wgpu::BufferUsages::INDEX,
             }
         );
 
-        let num_indices = INDICES.len() as u32;
+        let num_indices = INDICES_2.len() as u32;
 
         Self{
             surface,
