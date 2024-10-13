@@ -129,19 +129,19 @@ impl<'a> State<'a> {
 
         let vertex_buffer = device.create_buffer_init(&BufferInitDescriptor {
             label: Some("Vertex Buffer"),
-            contents: bytemuck::cast_slice(VERTICES_2),
+            contents: bytemuck::cast_slice(VERTICES),
             usage: wgpu::BufferUsages::VERTEX,
         });
 
         let index_buffer = device.create_buffer_init(
             &BufferInitDescriptor{
                 label: Some("Index buffer"),
-                contents: bytemuck::cast_slice(INDICES_2),
+                contents: bytemuck::cast_slice(INDICES),
                 usage: wgpu::BufferUsages::INDEX,
             }
         );
 
-        let num_indices = INDICES_2.len() as u32;
+        let num_indices = INDICES.len() as u32;
 
         Self{
             surface,
@@ -264,7 +264,7 @@ impl Vertex {
     }
 }
 
-const VERTICES: &[Vertex] = &[
+const VERTICES_1: &[Vertex] = &[
     Vertex { position: [-1.0, -0.1, 0.0], color: [0.4, 0.0, 0.4] }, // A
     Vertex { position: [-0.16, -0.1, 0.0], color: [0.4, 0.0, 0.4] }, // B 
     Vertex { position: [-1.0, 0.2, 0.0], color: [0.4, 0.0, 0.4] }, // C 
@@ -287,7 +287,7 @@ const VERTICES: &[Vertex] = &[
     Vertex { position: [-0.16, -1.0, 0.0], color: [0.6, 0.52, 0.8] }, // N
     ];
 
-const INDICES: &[u16] = &[
+const INDICES_1: &[u16] = &[
     0, 1, 2,
     3, 4, 0,
     1, 0, 4, 
@@ -318,3 +318,6 @@ const INDICES_2: &[u16] = &[
     1, 2, 4,
     2, 3, 4,
 ];
+
+const VERTICES: &[Vertex] = VERTICES_1;
+const INDICES: &[u16] = INDICES_1;
